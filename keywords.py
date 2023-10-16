@@ -13,7 +13,13 @@ Python Driving License - June 2023
 
 ## Summary
 
-The following code has been wrtitten to obtain the scientific papers starting from a database (i.e. from scopus). The user can choose different keywords to filter the results. A further filter on the year of pubblication can be used. The title and the year of pubblication can be exported as a txt file. In the last part of the code, some graph reproduce the results of the research.
+The provided script is designed to retrieve scientific papers from a database (i.e. Scopus). It enables users to apply diverse keyword filters and optionally restrict results based on the publication year. The extracted information, including titles and publication years, can be exported to a txt file. Additionally, the script generates a graph illustrating the research findings.
+
+The aim of this script is twofold:
+
+i) Highlight the significance of the multidisciplinary approach in the application of Bone Tissue Engineering.
+
+ii) Conduct a comprehensive review of composite ceramic scaffolds.
 
 ## Part 1
 Import of the database. The initial database has been created starting from two keywords: "glass scaffold" and "ceramic scaffold".
@@ -26,7 +32,9 @@ drive.mount('/content/drive')
 
 # change directory
 # %cd /content/drive/MyDrive/Colab Notebooks
-# %ls
+
+# Check the files in the working folder
+#%ls
 
 # import of the python libraries
 import numpy  as np
@@ -35,33 +43,49 @@ import pandas as pd
 # be sure the file exists in the current directory
 filename = 'scopus.xlsx'
 #filename = 'linda.xlsx'
+
 data = pd.read_excel(filename)
 
 dimensioni = np.shape(data)
 
 # check the dimensions of the database
-print(dimensioni)
+print(f'The initial number of papers is {dimensioni[0]}')
 
 """## Part 2
 The user select the keywords and apply a filter year-based. For each combination a file with the name of the keywords is written.
+
+The user can add/remove keywords as long as the variable strings is updated.
+
+Modify line 21 to apply the filter year-based
+
+Uncommet line 76 if you want to display the number of combination
+
+Uncommet line 97 if you want to display the title of the paper
 """
 
 from itertools import combinations_with_replacement as comb
 from collections import Counter
+from matplotlib.ticker import MaxNLocator
 import matplotlib.pyplot as plt
 import math
 import numpy  as np
 import pandas as pd
 
+# the user can add or remove the keywords. If so, update the variable strings
 # insert the keywords: 'mech', 'biol', 'mech', 'finite element'
-par1 = 'elastic'
-par2 = 'young'
-par3 = 'strength'
-par4 = 'fracture'
-par5 = 'finite element'
-i3 = 2000
+par1 = 'composite'
+par2 = 'hydroxyapatite'
+par3 = 'alumina'
+par4 = 'zirconia'
+par5 = 'silic'
+par6 = 'calcium'
+par7 = 'phosphate'
+#par8 = 'vitro'
+#par9 = 'mech'
+#par10 = 'computational'
+i3 = 2020
 
-strings = [par1, par2, par3, par4, par5]
+strings = [par1, par2, par3, par4, par5, par6, par7]#, par8, par9, par10]
 
 # Generate combinations
 comb_list = list(comb(strings, 2))
@@ -96,12 +120,14 @@ for combo2 in range(taglia2):
     annonum = [int(element) for element in annostr2]
     linelist = []
 
-    for line in range(dime[0]):
+    for line in range(dime[0]-1):
         i1 = 0
         i2 = 0
         for col in range(dime[1]):
             TF1 = pat1.lower() in str(df.iloc[line, col]).lower()
             TF2 = pat2.lower() in str(df.iloc[line, col]).lower()
+
+            # Boolean operator
             if TF1:
                 i1 = 1
             if TF2:
@@ -111,12 +137,13 @@ for combo2 in range(taglia2):
             howmany += 1
             linelist.append(line)
 
-    print(f'howmany: {howmany}')
+    # uncomment display the number of combination
+    print(f'Number of paper for this combination: {howmany}')
     vector_data.append(howmany)
 
 
-    # Stampo la posizione dei vettori
-    # print(f'linelist: {linelist}')
+    ### Stampo la posizione dei vettori
+    ### print(f'linelist: {linelist}')
 
     file_path = pat1 + "_" + pat2 + ".txt"
 
@@ -131,7 +158,10 @@ for combo2 in range(taglia2):
 
         matrix = str(anno) + " " + titolo
 
-        #print(matrix)
+        # uncomment to print the names of the papers
+        print(matrix)
+
+        # uncomment to write the txt files
         #file.write(matrix + '\n')
 
     if howmany > 0:
@@ -144,26 +174,34 @@ for combo2 in range(taglia2):
         plt.figure()
         plt.title(pat1 + "_" + pat2)
         plt.bar(items, counts)
-#        integer_ticks = np.arange(i3, , 1)  # Adjust the range and step as needed
-#        plt.xticks(integer_ticks)
+        integer_ticks = np.arange(i3, 2024, 1)  # Adjust the range and step as needed
+        plt.xticks(integer_ticks)
+        # Rotate the y-axis labels to display them diagonally
+        plt.xticks(rotation=45)
 
+        # rescaling of the y-axis
+        ax = plt.gca()
+        ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
 
 # Print the bars of all papers
 year_counts2 = Counter(data['Year'])
-# Convert the Counter to a dictionary if needed
-year_counts_dict2 = dict(year_counts2)
+### Convert the Counter to a dictionary if needed
+###year_counts_dict2 = dict(year_counts2)
 # Extract the items and their counts from the counter
 items2, counts2 = zip(*year_counts2.items())
+
+
 # Create a bar plot for the counter variable
+# Uncomment to show the bar plots
 plt.figure()
-plt.bar(items2, counts2)
+plt.bar(items2, counts2, label='First Bar Plot', color='b')
 plt.title("Glass and Ceramic Scaffolds")
 
 """## Part 3
-Since the analyzed problem is characterized by a multidisciplinary approach, some plots help to visualize the multidisciplinarity of the problem.
+Since the analyzed problem is characterized by a multidisciplinary approach, a matrix helps to visualize the multidisciplinarity of the problem.
 
-The first graph represents the numeber of studies that couple at least two research fields.
+The graph represents the numeber of studies that couple at least two research fields. On the main diagonal, the individual keywords are represented. Out of the diagonal, the combination between two keywords. As defined, the matrix is symmetric.
 """
 
 import matplotlib.pyplot as plt
@@ -218,3 +256,8 @@ plt.title(titolo_graf)
 
 # Show the plot
 plt.show()
+
+# Calculate the sum of the upper triangular part excluding the main diagonal
+upper_sum = np.sum(np.triu(symmetric_matrix, k=1))
+
+print(f"You have to read {int(upper_sum)} papers. Maybe less!")
